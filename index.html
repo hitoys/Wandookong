@@ -4100,8 +4100,8 @@ STORY.HSCENE.push(
 STORY.HFIN_GRAVE={
   hato:['…다들, 내 뒤로.','이 방패… 아직 안 깨졌어.','하로, 고개 들어. 칼끝 내리지 말고.','아이린, 하로 곁에 있어 줘.','…버텨. 조금만 더.','숨 쉬어, 하로. 천천히.'],
   irene:['괜찮아… 아직 노래할 수 있어.','꼬마 용사님, 제 뒤에 계세요.','하토, 무리하지 마…','…손 놓지 마세요, 꼬마 용사님.','노래는 끝나지 않아. 들리지?'],
-  haro:['…스, 스승님…','무서워… 무서운데…','누나, 가지 마…','칼끝… 내리지 않을 거야.','…다리가, 안 움직여…'],
-  haro2:['이제, 도망치지 않아.','스승님의 방패, 누나의 노래. 전부 여기 있어.','빛은… 내가 될게.','네 왕국은 여기서 끝이야.','…무섭지 않아. 이제는.']
+  haro:['…사, 사부님…','무서워… 무서운데…','누나, 가지 마…','칼끝… 내리지 않을 거야.','…다리가, 안 움직여…'],
+  haro2:['이제, 도망치지 않아.','사부님의 방패, 누나의 노래. 전부 여기 있어.','빛은… 내가 될게.','네 왕국은 여기서 끝이야.','…무섭지 않아. 이제는.']
 };
 </script>
 <script>// =====================================================================
@@ -5172,7 +5172,7 @@ function resolve(B,picks){
   B.turn++;
   if(B.hfin&&B.over==='win'&&!B.hfin.done){B.hfin.done=1;B.hfin.lock=0;const rv=[];B.units.forEach(x=>{if(x.side==='ally'&&x.state!=='ok'){x.state='ok';x.hp=Math.round(x.maxhp*.5);x.st={};rv.push(x.id)}});ev.push({k:'hfin',step:'light',rv})}
   if(B.hfin&&B.hfin.st>=1&&STORY.HFIN_GRAVE){const G=STORY.HFIN_GRAVE;let said=0;for(let k=ev.length-1;k>=0;k--){const e=ev[k];if(e.k!=='say')continue;const su=B.units.find(x=>x.id===e.a);if(!su||su.side!=='ally')continue;
-    const key=su.uq==='haro'&&B.hfin.st>=4?'haro2':su.uq;const L=G[key];if(L&&!said&&su.state==='ok'){said=1;e.txt=L[Math.floor(r()*L.length)]}else ev.splice(k,1)}}
+    const key=su.uq==='haro'&&B.hfin.st>=4?'haro2':su.uq;const al=q=>B.units.some(x=>x.side==='ally'&&x.uq===q&&x.state==='ok');let L=G[key];if(L){L=L.filter(t=>!(/하토|사부님/.test(t)&&!al('hato'))&&!(/아이린|누나/.test(t)&&!al('irene'))||key==='haro2')}if(L&&L.length&&!said&&su.state==='ok'&&r()<.7){said=1;B.gvLast=B.gvLast||{};const L2=L.length>1?L.filter(t=>t!==B.gvLast[su.id]):L;e.txt=L2[Math.floor(r()*L2.length)];B.gvLast[su.id]=e.txt}else ev.splice(k,1)}}
   return ev;
 }
 function phaseCheck(B,ev){B.units.forEach(x=>{if(!x.boss||x.state!=='ok')return;if(x.crown&&B.hfin){if(B.hfin.st===0&&(x.hp<x.maxhp*.6||B.turn-(B.hfin.bt||0)>=5))hfinP2(B,x,ev);return}if(x.finalK&&x.ph2&&x.hp<x.maxhp*.35){betray(B,x,ev);return}if(!x.ph2&&x.hp<x.maxhp*(x.fierce?.6:.5))phase2(B,x,ev);else if(x.ph2&&x.fierce&&!x.ph3&&!x.finalK&&x.hp<x.maxhp*.25)phase3(B,x,ev)})}
@@ -7695,7 +7695,7 @@ function onNet(m){
       mono:Math.max(0,Math.min(.3,+j.mono||0)),uqq:strList(j.uqq,x=>!!STORY.QUEST[x],20),trio:!!j.trio,hs:strList(j.hs,x=>(STORY.HSCENE||[]).some(s=>s.id===x),60),hr:strList(j.hr,x=>(STORY.HARO_EV||[]).some(s=>s.id===x),20),smith:!!j.smith,scout:!!j.scout,cat:!!j.cat,boon:(typeof j.boon==='string'&&ENG.BOONS[j.boon])?j.boon:null,miss:(()=>{const o={};if(j.miss&&typeof j.miss==='object')Object.keys(j.miss).slice(0,40).forEach(k=>{if(STORY.UNIQ[k])o[k]=clamp(j.miss[k]|0,0,20)});return o})(),gcat:clamp(j.gcat|0,0,999),gmem:clamp(j.gmem|0,0,999),constel:cleanConstel(j.constel)};
       S.partnerConnected=true;S.vowAgreed=null;SND.play('connect');NET.send({t:'welcome'});NET.send({t:'lobby',party:myParty()});NET.send({t:'vows',v:S.dep.vows||[]});renderLobby();return}
     if(m.t==='vowok'){S.vowAgreed=typeof m.v==='string'?m.v.slice(0,200):null;if(S.vowAgreed===(S.dep.vows||[]).join()){SND.play('frag');toast('상대가 함께 맹세했어요!')}renderLobby();return}
-    if(m.t==='picks'&&S.E&&S.E.phase==='battle'&&!S.animating){S.partnerPicks=validPicks(m.picks,1);S.partnerReady=true;S.partnerAuto=!!m.auto;renderPanel();tryResolve();return}
+    if(m.t==='picks'&&S.E&&S.E.phase==='battle'){if(S.animating){S.pendingPicks=m;return}S.partnerPicks=validPicks(m.picks,1);S.partnerReady=true;S.partnerAuto=!!m.auto;renderPanel();tryResolve();return}
     if(m.t==='status'){const k=(m.n|0)+'|'+!!m.auto;if(S.pStatus===k)return;S.pStatus=k;S.partnerPickedN=clamp(m.n|0,0,3);S.partnerAuto=!!m.auto;renderPanel();return}
     if(m.t==='cmd'){const c=m.c;if(c==='vote')EXP.vote(1,m.i|0);if(c==='ready')EXP.ready(1);if(c==='equip'&&typeof m.id==='string')EXP.equip(1,m.id,String(m.to||'').slice(0,20));if(c==='buy'&&typeof m.w==='string')EXP.buy(1,m.w.slice(0,12));
       if(c==='pz'&&m.p&&typeof m.p==='object')EXP.puzzle(1,{a:String(m.p.a||'').slice(0,6),i:m.p.i|0,v:m.p.v|0,k:String(m.p.k||'').slice(0,2),d:m.p.d|0});if(c==='forge'&&typeof m.id==='string')EXP.forge(1,m.id.slice(0,20));if(c==='train'&&typeof m.id==='string')EXP.train(1,m.id.slice(0,20));if(c==='gamble')EXP.gamble(1,m.amt|0);if(c==='uqpick')EXP.uqPick(1,m.v===1?1:0);if(c==='claim')EXP.claimVote(1,m.v===1?1:0);return}
@@ -7813,7 +7813,7 @@ function enterBattleView(B){
   beginChoose(); renderGame();
 }
 function beginChoose(){
-  S.picks={};S.sel=null;S.myReady=false;S.partnerPicks={};S.partnerPickedN=0;S.hostPicks=null;S.potFor=null;
+  if(S.mode!=='host')S.pendingPicks=null;S.picks={};S.sel=null;S.myReady=false;S.partnerPicks={};S.partnerPickedN=0;S.hostPicks=null;S.potFor=null;
   S.partnerReady=(S.mode==='solo')||(S.mode==='host'&&!NET.open);
   myUnits().forEach(u=>{if(u.state==='ok'){const r=ENG.mulberry(Date.now()+u.slot);const p=ENG.autoPick(R.view,u,r);S.picks[u.id]=p?{...p,auto:1}:null}});
   if(!myUnits().some(u=>u.state==='ok')){const V=R.view.units;const ch=V.find(u=>u.side==='enemy'&&u.state==='ok'&&u.charge);const low=V.filter(u=>u.side==='ally'&&u.state!=='dead').sort((a,b)=>(a.state==='down'?-1:a.hp/a.maxhp)-(b.state==='down'?-1:b.hp/b.maxhp))[0];
@@ -7827,7 +7827,7 @@ function confirmReady(){
   if(!S.E||S.E.phase!=='battle'||S.myReady||S.animating)return;
   S.myReady=true;SND.play('ready');
   const picks={};for(const k in S.picks){const p=S.picks[k];if(p)picks[k]={sk:p.sk,t:p.t||null}}
-  if(S.mode==='guest')NET.send({t:'picks',picks,auto:S.auto});else{S.hostPicks=picks;tryResolve()}
+  if(S.mode==='guest')NET.send({t:'picks',picks,auto:S.auto,turn:S.E.B&&S.E.B.turn});else{S.hostPicks=picks;tryResolve()}
   S.sel=null;renderPanel();
 }
 function tryResolve(){
@@ -7845,7 +7845,7 @@ async function runTurnResult(ev,B){
   S.animating=false;
   if(S.mode!=='guest'&&S.pendingE&&S.pendingE.phase!=='battle'){const e=S.pendingE;S.pendingE=null;receiveE(e);return}
   if(B.over&&S.hapB!==B.seed){S.hapB=B.seed;HAP.p(B.over==='win'?'win':'wipe')}
-  if(S.mode!=='guest'){ S.pendingE=null; if(B.over){ await sleep(500); B.over==='win'?SND.play('win'):SND.play('lose'); EXP.afterTurn(); } else { S.E.B=EXP.E.B; beginChoose(); renderGame(); } }
+  if(S.mode!=='guest'){ S.pendingE=null; if(B.over){ S.pendingPicks=null; await sleep(500); B.over==='win'?SND.play('win'):SND.play('lose'); EXP.afterTurn(); } else { S.E.B=EXP.E.B; beginChoose(); renderGame(); const pp=S.pendingPicks;S.pendingPicks=null;if(pp&&S.mode==='host'&&(pp.turn==null||pp.turn===EXP.E.B.turn)){S.partnerPicks=validPicks(pp.picks,1);S.partnerReady=true;S.partnerAuto=!!pp.auto;renderPanel();tryResolve()} } }
   else { if(S.pendingE){const e=S.pendingE;S.pendingE=null;receiveE(e)} else if(!B.over){S.E.B=B;beginChoose();renderGame()} }
 }
 function coinFlip(c){
